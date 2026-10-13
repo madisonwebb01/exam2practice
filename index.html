@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap">
+<title>BIOL 8420 Exam 2 Practice</title>
+</head>
+<body>
+<style>
+  /* ---- Canvas-flavoured design system ---------------------------------- */
+  :root {
+    color-scheme: light;
+    --ink:    #2d3b45;   /* primary text */
+    --ink-2:  #6b7780;   /* secondary text */
+    --ink-3:  #8b969e;   /* meta / disabled text */
+    --line:   #c7cdd1;   /* container borders */
+    --rule:   #e8eaec;   /* hairline rules between rows */
+    --bg:     #f7f4fd;   /* page — lavender, top of gradient */
+    --bg-2:   #cdc0e9;   /* page — lavender, bottom of gradient */
+    --surface:#ffffff;
+    --bar:    #f5f5f5;   /* card header bars */
+    --bar-2:  #eef4f0;
+    --blue:      #0374b5; /* Canvas action blue */
+    --blue-dark: #02557f;
+    --blue-bg:   #e4f0f8;
+    --green:     #0b874b;
+    --green-bg:  #e2f1e8;
+    --red:       #b93221;
+    --red-bg:    #f8e6e3;
+    --amber:     #8a5a13;
+    --amber-bg:  #fdf3d9;
+    --amber-line:#e0ac3e;
+    --mark:      #fbe79a;
+  }
+  * { box-sizing: border-box; font-family: inherit; }
+  body {
+    margin: 0;
+    font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--bg);
+    background-image: linear-gradient(165deg, var(--bg) 0%, var(--bg-2) 100%);
+    background-attachment: fixed;
+    padding: 24px 22px 56px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  /* ---- page header ----------------------------------------------------- */
+  header { margin-bottom: 18px; }
+  h1 { font-size: 27px; font-weight: 700; margin: 0 0 5px; color: var(--ink); text-wrap: balance; }
+  .subtitle { font-size: 15px; color: var(--ink-2); line-height: 1.6; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 3px;
+    padding: 12px 15px; min-width: 0;
+  }
+  .stat .num { font-size: 24px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .stat .label {
+    font-size: 12px; color: var(--ink-3); text-transform: uppercase;
+    letter-spacing: .05em; font-weight: 700; margin-top: 2px;
+  }
+
+  /* ---- Canvas tab strip ------------------------------------------------- */
+  .tabs {
+    display: flex; align-items: flex-end; gap: 3px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--line); margin-bottom: 16px;
+  }
+  .tab {
+    font-size: 15px; font-weight: 700; color: var(--blue); cursor: pointer;
+    background: transparent; border: 1px solid transparent; border-bottom: none;
+    border-radius: 3px 3px 0 0; padding: 11px 20px; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--blue-dark); background: rgba(255,255,255,.55); }
+  .tab[aria-selected="true"] {
+    background: var(--surface); border-color: var(--line); color: var(--ink); cursor: default;
+  }
+  .tab.reset {
+    margin-left: auto; font-size: 13.5px; font-weight: 400; color: var(--ink-2);
+    border: 1px solid var(--line); border-radius: 3px; background: var(--surface);
+    padding: 7px 14px; margin-bottom: 7px;
+  }
+  .tab.reset:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .tab.reset.armed { background: var(--red); border-color: var(--red); color: #fff; font-weight: 700; }
+  .tab:focus-visible, .chip:focus-visible, .cv-opt:focus-visible, button:focus-visible {
+    outline: 2px solid var(--blue); outline-offset: 1px;
+  }
+
+  /* ---- filter row ------------------------------------------------------- */
+  .toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .chip {
+    font-size: 13.5px; padding: 7px 13px; border-radius: 3px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
+  }
+  .chip:hover { background: var(--bar); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--blue-bg); border-color: var(--blue); color: var(--blue-dark); font-weight: 700; }
+  .toolbar-sep { flex: 1 1 auto; }
+
+  .progress-track { height: 6px; background: #fff; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
+  .progress-fill { height: 100%; background: var(--blue); transition: width .25s ease; }
+
+  /* ---- generic card (results, decks, empty states) ---------------------- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 3px; padding: 0; }
+  .q-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--bar); border-bottom: 1px solid var(--line); padding: 13px 22px;
+  }
+  .q-count { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--ink-2); }
+  .card > .q-head + * { margin-top: 18px; }
+  .card h2, .card .subtitle, .card .topic-row, .card h3, .card .actions, .card .stem,
+  .card .prompt-label, .card .claim, .card .reveal, .card .selfcheck, .card .opts, .card figure { margin-left: 22px; margin-right: 22px; }
+  .card h2:first-child { padding-top: 20px; }
+  .card .actions { padding-bottom: 20px; }
+
+  .badge {
+    display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .badge.m1 { background: var(--blue-bg); color: var(--blue-dark); }
+  .badge.m2 { background: #e0f0ef; color: #0f6b6b; }
+  .badge.topic { background: var(--bar); color: var(--ink-2); border: 1px solid var(--line); }
+  .badge.good { background: var(--green-bg); color: var(--green); }
+  .badge.bad { background: var(--red-bg); color: var(--red); }
+
+  h2 { font-size: 21px; font-weight: 700; margin: 0 0 6px; color: var(--ink); }
+  h3 { font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--ink-3); margin: 22px 0 4px; }
+  .stem { font-size: 17.5px; line-height: 1.62; margin: 0 0 16px; }
+
+  figure { margin: 0 0 16px; }
+  figure img { max-width: 100%; border: 1px solid var(--line); border-radius: 3px; background: #fff; display: block; }
+  figcaption { font-size: 13px; color: var(--ink-3); margin-top: 6px; line-height: 1.5; }
+  .fig-legend { list-style: none; margin: 8px 0 0; padding: 10px 12px; background: var(--bar); border: 1px solid var(--rule); border-radius: 3px; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; }
+  .fig-legend dt { font-weight: 700; color: var(--ink); font-size: 13.5px; }
+  .fig-legend dd { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+
+  .stem-list {
+    margin: 0 0 16px; padding: 12px 16px; background: var(--bar);
+    border: 1px solid var(--rule); border-radius: 3px;
+    display: grid; grid-template-columns: auto 1fr; gap: 7px 12px;
+  }
+  .stem-list dt { font-weight: 700; color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+  .stem-list dd { margin: 0; font-size: 16px; color: var(--ink); line-height: 1.5; }
+
+  .rv-count {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .05em;
+    font-weight: 700; color: var(--ink-2); margin: 0 0 10px;
+  }
+  .cv-static { cursor: default; width: 100%; text-align: left; }
+
+  /* ---- celebration overlay ---------------------------------------------- */
+  .fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 60; overflow: hidden; }
+  .fx-bit { position: absolute; width: 6px; height: 9px; top: -18px; opacity: .85; }
+  .fx-toast {
+    position: fixed; left: 50%; top: 26px; transform: translateX(-50%) translateY(-14px);
+    z-index: 61; pointer-events: none; display: flex; flex-direction: column; align-items: center;
+    gap: 1px; background: var(--surface); border: 1px solid var(--green);
+    border-radius: 3px; padding: 9px 18px; opacity: 0;
+    animation: fx-in .25s cubic-bezier(.2,.8,.3,1) forwards;
+  }
+  .fx-toast.out { animation: fx-out .45s ease forwards; }
+  .fx-msg { font-size: 14.5px; font-weight: 700; color: var(--green); }
+  .fx-sub { font-size: 12.5px; color: var(--ink-2); }
+  @keyframes fx-in  { to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  @keyframes fx-out { to { opacity: 0; transform: translateX(-50%) translateY(-14px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .fx-layer { display: none; }
+    .fx-toast { animation: none; opacity: 1; transform: translateX(-50%); }
+  }
+  .cv + .cv { margin-top: 44px; }
+
+  /* ---- buttons ---------------------------------------------------------- */
+  .actions { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+  button.primary {
+    font-size: 15px; font-weight: 700; color: #fff; background: var(--blue);
+    border: 1px solid var(--blue); border-radius: 3px; padding: 10px 20px; cursor: pointer;
+  }
+  button.primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+  button.primary:disabled { background: #cfd6da; border-color: #cfd6da; color: #fff; cursor: not-allowed; }
+  button.ghost {
+    font-size: 15px; font-weight: 700; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 3px; padding: 10px 18px; cursor: pointer;
+  }
+  button.ghost:hover:not(:disabled) { background: var(--bar); }
+  button.ghost:disabled { color: var(--ink-3); cursor: not-allowed; }
+  .hint { font-size: 14px; color: var(--ink-3); }
+
+  /* ---- Canvas question card --------------------------------------------- */
+  .cv { position: relative; margin-top: 40px; }
+  .cv-tab {
+    position: absolute; top: -37px; left: 0;
+    padding: 8px 18px; border-radius: 3px 3px 0 0;
+    font-size: 19px; color: #fff; background: var(--green);
+  }
+  .cv.incorrect .cv-tab { background: var(--red); }
+  .cv-card { border: 2px solid var(--line); border-radius: 3px; background: var(--surface); overflow: hidden; }
+  .cv.correct .cv-card { border-color: var(--green); }
+  .cv.incorrect .cv-card { border-color: var(--red); }
+  .cv-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--bar); border-bottom: 1px solid var(--line); padding: 14px 22px;
+  }
+  .cv-qnum { font-size: 24px; font-weight: 700; }
+  .cv-right { display: flex; align-items: center; gap: 14px; }
+  .cv-pts { font-size: 16px; font-variant-numeric: tabular-nums; }
+  .cv-flag {
+    font-size: 14px; cursor: pointer; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink-2); border-radius: 3px; padding: 6px 12px;
+  }
+  .cv-flag:hover { background: var(--bar-2); color: var(--ink); }
+  .cv-flag.on { background: var(--amber-bg); border-color: var(--amber-line); color: var(--amber); font-weight: 700; }
+  .cv-body { padding: 22px 30px 16px; }
+  .cv-meta { font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--ink-3); margin-bottom: 16px; }
+  .cv-stem { font-size: 17.5px; line-height: 1.62; margin: 0 0 17px; }
+  .cv-opts { margin-top: 22px; }
+  .cv-opt {
+    position: relative; display: flex; align-items: flex-start; gap: 13px; width: 100%; text-align: left;
+    background: var(--surface); border: none; border-top: 1px solid var(--rule);
+    padding: 19px 4px 19px 46px; cursor: pointer;
+    font-size: 16px; line-height: 1.55; color: var(--ink);
+  }
+  .cv-opt:last-of-type { border-bottom: 1px solid var(--rule); }
+  .cv-opt:hover:not(:disabled) { background: #f6fafc; }
+  .cv-opt:disabled { cursor: default; }
+  .cv-opt.cv-dim { color: #a3a9ad; }
+  .cv-radio {
+    flex: 0 0 auto; width: 17px; height: 17px; border-radius: 50%; margin-top: 3px;
+    border: 1px solid var(--line); background: #fff;
+  }
+  .cv-opt.cv-dim .cv-radio { border-color: #dcdfe1; }
+  .cv-radio.filled { box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 12px var(--ink-3); }
+  .cv-opt.cv-picked .cv-radio { border-color: var(--blue); box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 12px var(--blue); }
+  .cv-check, .cv-cross {
+    position: absolute; left: 0; top: 15px; width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+  .cv-check { background: var(--green); }
+  .cv-cross { background: var(--red); }
+  .cv-otext { min-width: 0; overflow-wrap: break-word; }
+  .cv-label { display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+  .cv-label.good { color: var(--green); }
+  .cv-label.bad { color: var(--red); }
+  .cv-why { font-size: 14.5px; line-height: 1.6; color: var(--ink-2); padding: 0 4px 16px 46px; }
+  .cv-why b { color: var(--ink); font-weight: 700; }
+  .cv-why.good { color: #2f6a4c; }
+  .cv .actions { margin-left: 0; margin-right: 0; }
+
+  /* ---- Additional Practice Tools drill card (same Canvas chrome) --------- */
+  .banner {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 22px; border-bottom: 1px solid;
+  }
+  .banner.right { background: var(--green-bg); border-bottom-color: var(--green); color: #14492d; }
+  .banner.wrong { background: var(--red-bg); border-bottom-color: var(--red); color: #6e2c1e; }
+  .banner .bmark {
+    flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff;
+  }
+  .banner.right .bmark { background: var(--green); }
+  .banner.wrong .bmark { background: var(--red); }
+  .banner .btext { display: flex; flex-direction: column; min-width: 0; }
+  .banner .bword { font-size: 21px; font-weight: 700; line-height: 1.2; }
+  .banner .bsub { font-size: 14px; opacity: .9; margin-top: 1px; }
+  .banner .bnext {
+    margin-left: auto; flex: 0 0 auto; cursor: pointer;
+    font-size: 15px; font-weight: 700; border-radius: 3px; padding: 10px 18px;
+    background: var(--surface); border: 1px solid rgba(0,0,0,.18); color: inherit;
+  }
+  .banner .bnext:hover { background: var(--bar); }
+
+  .opts { display: flex; flex-direction: column; }
+  .opt {
+    position: relative; display: flex; align-items: flex-start; gap: 13px; width: 100%; text-align: left;
+    background: var(--surface); border: none; border-top: 1px solid var(--rule);
+    padding: 18px 4px; cursor: pointer; font-size: 16px; line-height: 1.55; color: var(--ink);
+  }
+  .opt:hover:not(:disabled) { background: #f6fafc; }
+  .opt:disabled { cursor: default; }
+  .opt .letter {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--bar); color: var(--ink-2); font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+    border: 1px solid var(--line);
+  }
+  .opt[aria-pressed="true"] .letter { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .opt.is-correct .letter { background: var(--green); border-color: var(--green); color: #fff; }
+  .opt.is-correct .otext { background: var(--mark); box-shadow: 0 0 0 3px var(--mark); border-radius: 2px; }
+  .opt.is-chosen-wrong .letter { background: var(--red); border-color: var(--red); color: #fff; }
+  .otext { min-width: 0; overflow-wrap: break-word; }
+  .why { font-size: 14.5px; line-height: 1.6; color: var(--ink-2); padding: 0 4px 14px 39px; }
+  .why b { color: var(--ink); font-weight: 700; }
+  .why.correct-why { color: #2f6a4c; }
+
+  .note {
+    margin: 16px 0 0; background: var(--amber-bg); border: 1px solid var(--amber-line);
+    border-left-width: 4px; border-radius: 3px;
+    padding: 12px 15px; font-size: 14.5px; line-height: 1.6; color: var(--amber);
+  }
+
+  /* ---- flip-card drills -------------------------------------------------- */
+  .prompt-label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--ink-3); margin-bottom: 8px; }
+  .claim {
+    font-size: 17px; line-height: 1.6; background: var(--bar); border: 1px solid var(--line);
+    border-left: 4px solid var(--ink-3); border-radius: 3px; padding: 16px 18px; color: var(--ink);
+  }
+  .reveal {
+    margin-top: 16px; background: var(--green-bg); border: 1px solid #a9d3bb;
+    border-left: 4px solid var(--green); border-radius: 3px;
+    padding: 16px 18px; font-size: 15.5px; line-height: 1.6; color: #24533a;
+  }
+  .reveal .rlabel { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--green); display: block; margin-bottom: 5px; }
+  .reveal .near { display: block; margin-top: 10px; padding-top: 10px; border-top: 1px solid #b9dcc8; font-size: 14.5px; color: #3d6a50; }
+
+  .selfcheck {
+    margin-top: 16px; background: var(--amber-bg); border: 1px solid var(--amber-line);
+    border-radius: 3px; padding: 13px 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .selfcheck .sclabel { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--amber); font-weight: 700; }
+  .selfcheck button {
+    font-size: 14.5px; font-weight: 700; border-radius: 3px; padding: 8px 16px; cursor: pointer;
+    border: 1px solid var(--amber-line); background: #fff; color: var(--amber);
+  }
+  .selfcheck button:hover { background: #fbf0d3; }
+  .selfcheck button.got { color: var(--green); border-color: #a9d3bb; }
+  .tally { font-size: 13.5px; color: var(--ink-3); margin-left: auto; font-variant-numeric: tabular-nums; }
+
+  /* ---- results ----------------------------------------------------------- */
+  .topic-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 11px 0; border-bottom: 1px solid var(--rule); font-size: 15px;
+  }
+  .topic-row:last-of-type { border-bottom: none; }
+  .topic-name { min-width: 0; overflow-wrap: break-word; }
+  .topic-score { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---- deck picker -------------------------------------------------------- */
+  .deck-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .deck {
+    background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--blue);
+    border-radius: 3px; padding: 16px 17px; cursor: pointer; text-align: left;
+  }
+  .deck:hover { background: #f6fafc; border-top-color: var(--blue-dark); }
+  .deck .dname { font-size: 16.5px; font-weight: 700; color: var(--ink); margin-bottom: 5px; }
+  .deck .ddesc { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+  .deck .dcount { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--blue); margin-top: 10px; }
+
+  footer {
+    margin-top: 28px; font-size: 13.5px; color: var(--ink-2);
+    border-top: 1px solid var(--line); padding-top: 14px; line-height: 1.6;
+  }
+  footer b { color: var(--ink); font-weight: 700; }
+
+  @media (max-width: 620px) {
+    body { padding: 16px 16px 40px; }
+    .deck-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cv-body { padding: 18px 16px 12px; }
+    .cv-opt { padding-left: 42px; }
+    .cv-why, .why { padding-left: 42px; }
+    .card h2, .card .subtitle, .card .topic-row, .card h3, .card .actions, .card .stem,
+    .card .prompt-label, .card .claim, .card .reveal, .card .selfcheck, .card .opts, .card figure { margin-left: 16px; margin-right: 16px; }
+    .tab { padding: 10px 14px; font-size: 14px; }
+    .banner { padding: 13px 16px; flex-wrap: wrap; }
+    .banner .bnext { width: 100%; margin-left: 0; order: 3; }
+    .tally { margin-left: 0; width: 100%; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>BIOL 8420 Exam 2 Practice</h1>
+  </header>
+
+  <div class="stats-row" id="stats"></div>
+
+  <div class="tabs">
+    <button class="tab" id="tab-test" role="tab" aria-selected="true">Practice Test</button>
+    <button class="tab" id="tab-inside" role="tab" aria-selected="false">Additional Practice Tools</button>
+    <button class="tab" id="tab-review" role="tab" aria-selected="false">My Review</button>
+    <span class="toolbar-sep"></span>
+    <button class="tab reset" id="reset">Reset progress</button>
+  </div>
+
+  <div id="view"></div>
+</div>
+
+<script src="bank1.js"></script>
+<script src="bank2.js"></script>
+<script src="drills.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- data ----------
+  var ALL = [];
+  (window.BANK_M1 || []).forEach(function (q) { q.mod = 1; q.id = "m3-" + q.n; ALL.push(q); });
+  (window.BANK_M2 || []).forEach(function (q) { q.mod = 2; q.id = "m4-" + q.n; ALL.push(q); });
+
+  var LET = "ABCDEFGH";
+
+  // ---------- storage ----------
+  var KEY = "biol8420-unit2-lab-v1";
+  var S = { seen: {}, wrong: {}, right: {}, drill: {}, flags: {}, ans: {}, pos: {} };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { var p = JSON.parse(raw); if (p && typeof p === "object") S = Object.assign(S, p); }
+  } catch (e) { /* private window or blocked storage — run without it */ }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ }
+  }
+
+  // ---------- state ----------
+  var st = {
+    mode: "test",
+    mods: { 1: true, 2: false },
+    missedOnly: false,
+    shuffleQ: false,
+    unseenFirst: true,
+    shuffleO: true,
+    queue: [], idx: 0, ans: {}, flaggedOnly: false,
+    reviewFilter: "wrong",
+    streak: 0, celebrated: false,
+    runRight: 0, runTotal: 0, byTopic: {},
+    deck: null, dqueue: [], didx: 0, revealed: false, dsel: null,
+    tally: { got: 0, miss: 0 }
+  };
+
+  // come back to whichever scope was last in use
+  if (S.scope === "mix") { st.mods[1] = true; st.mods[2] = true; }
+  else if (S.scope === 2) { st.mods[1] = false; st.mods[2] = true; }
+
+  var view = document.getElementById("view");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function shuffled(a) {
+    var r = a.slice();
+    for (var i = r.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = r[i]; r[i] = r[j]; r[j] = t; }
+    return r;
+  }
+
+  // ---------- celebration ----------
+  var CALM = false;
+  try { CALM = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { /* ignore */ }
+
+  function burst(big) {
+    if (CALM) return;
+    var layer = document.createElement("div");
+    layer.className = "fx-layer";
+    document.body.appendChild(layer);
+    var colors = ["#0374b5", "#0b874b", "#e0ac3e", "#b93221", "#02557f", "#fbe79a"];
+    var n = big ? 26 : 14;
+    for (var i = 0; i < n; i++) {
+      var bit = document.createElement("div");
+      bit.className = "fx-bit";
+      bit.style.background = colors[i % colors.length];
+      bit.style.left = (Math.random() * 100) + "vw";
+      if (Math.random() < 0.4) bit.style.borderRadius = "50%";
+      layer.appendChild(bit);
+      try {
+        bit.animate([
+          { transform: "translate(0,0) rotate(0deg)", opacity: 1 },
+          { transform: "translate(" + (Math.random() * 120 - 60) + "px," +
+                       (window.innerHeight + 90) + "px) rotate(" + (Math.random() * 900 - 450) + "deg)",
+            opacity: 0.85 }
+        ], {
+          duration: 1100 + Math.random() * 500,
+          delay: Math.random() * 180,
+          easing: "cubic-bezier(.2,.6,.5,1)",
+          fill: "forwards"
+        });
+      } catch (e) { /* no Web Animations — the confetti just sits still and is removed */ }
+    }
+    setTimeout(function () { if (layer.parentNode) layer.parentNode.removeChild(layer); }, 2000);
+  }
+
+  function cheer(msg, sub, big) {
+    burst(big);
+    var t = document.createElement("div");
+    t.className = "fx-toast";
+    t.innerHTML = '<span class="fx-msg">' + esc(msg) + "</span>" +
+                  (sub ? '<span class="fx-sub">' + esc(sub) + "</span>" : "");
+    document.body.appendChild(t);
+    setTimeout(function () { t.classList.add("out"); }, 1500);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2000);
+  }
+
+  // ---------- stats header ----------
+  function renderStats() {
+    var answered = Object.keys(S.seen).length;
+    var correct = Object.keys(S.right).length;
+    var missed = Object.keys(S.wrong).length;
+    var pct = answered ? Math.round((correct / answered) * 100) : 0;
+    var m1 = ALL.filter(function (q) { return q.mod === 1; });
+    var m2 = ALL.filter(function (q) { return q.mod === 2; });
+    var seenIn = function (list) { return list.filter(function (q) { return S.seen[q.id]; }).length; };
+    var tiles = [
+      [seenIn(m1) + " / " + m1.length, "Module 3 seen"],
+      [seenIn(m2) + " / " + m2.length, "Module 4 seen"],
+      [pct + "%", "Accuracy"],
+      [missed, "In your missed pile"],
+      [Object.keys(S.flags).length, "Flagged for review"]
+    ];
+    document.getElementById("stats").innerHTML = tiles.map(function (t) {
+      return '<div class="stat"><div class="num">' + esc(t[0]) + '</div><div class="label">' + esc(t[1]) + "</div></div>";
+    }).join("");
+  }
+
+  // ---------- queue building ----------
+  function activeMod() {
+    if (st.mods[1] && st.mods[2]) return "mix";
+    return st.mods[1] ? 1 : 2;
+  }
+  function seenInQueue() {
+    return st.queue.filter(function (q) { return S.seen[q.id]; }).length;
+  }
+  // Position is remembered for the straight run through a module,
+  // not for the filtered missed/flagged views.
+  function tracking() { return !st.missedOnly && !st.flaggedOnly; }
+
+  // Rebuild the running tally from answers already submitted in this queue,
+  // so returning to a module shows the score you actually earned there.
+  function recomputeRun() {
+    st.runRight = 0; st.runTotal = 0; st.byTopic = {};
+    st.queue.forEach(function (q) {
+      var a = S.ans[q.id];
+      if (!a || !a.submitted) return;
+      var correctIdx = q.opts.findIndex(function (o) { return o[1]; });
+      var right = a.sel === correctIdx;
+      a.counted = true;
+      st.runTotal++; if (right) st.runRight++;
+      var t = st.byTopic[q.topic] || (st.byTopic[q.topic] = { r: 0, n: 0 });
+      t.n++; if (right) t.r++;
+    });
+  }
+
+  function buildQueue() {
+    var q = ALL.filter(function (x) { return st.mods[x.mod]; });
+    if (st.missedOnly) q = q.filter(function (x) { return S.wrong[x.id]; });
+    if (st.flaggedOnly) q = q.filter(function (x) { return S.flags[x.id]; });
+    if (st.shuffleQ) {
+      q = shuffled(q);
+    } else if (activeMod() === "mix") {
+      var a1 = q.filter(function (x) { return x.mod === 1; });
+      var a2 = q.filter(function (x) { return x.mod === 2; });
+      var woven = [];
+      for (var k = 0; k < Math.max(a1.length, a2.length); k++) {
+        if (a1[k]) woven.push(a1[k]);
+        if (a2[k]) woven.push(a2[k]);
+      }
+      q = woven;
+    }
+    if (st.unseenFirst) {
+      var fresh = [], done = [];
+      q.forEach(function (x) { (S.seen[x.id] ? done : fresh).push(x); });
+      q = fresh.concat(done);
+    }
+    st.queue = q;
+    st.ans = S.ans;
+
+    // Land on the question this module was left on, if it is still in the queue.
+    var want = tracking() ? S.pos[activeMod()] : null, at = 0;
+    if (want) {
+      for (var i = 0; i < st.queue.length; i++) {
+        if (st.queue[i].id === want) { at = i; break; }
+      }
+    }
+    st.idx = at;
+    st.celebrated = false;
+    recomputeRun();
+  }
+
+  // Start this module over: clear its answers and its saved place.
+  function restartQueue() {
+    st.queue.forEach(function (q) { delete S.ans[q.id]; });
+    delete S.pos[activeMod()];
+    save();
+    buildQueue();
+  }
+
+  function optionOrder(q) {
+    if (!q._order || q._order.length !== q.opts.length) {
+      var idxs = q.opts.map(function (_, i) { return i; });
+      q._order = st.shuffleO ? shuffled(idxs) : idxs;
+    }
+    return q._order;
+  }
+
+  // ---------- practice test ----------
+  function ansFor(q) {
+    return st.ans[q.id] || (st.ans[q.id] = { sel: null, submitted: false, showWhy: false, counted: false });
+  }
+
+  function renderTest() {
+    if (!st.queue.length) buildQueue();
+
+    var flagCount = Object.keys(S.flags).length;
+    var toolbar =
+      '<div class="toolbar">' +
+        '<button class="chip" data-t="mod1" aria-pressed="' + (st.mods[1] && !st.mods[2]) + '">Module 3</button>' +
+        '<button class="chip" data-t="mod2" aria-pressed="' + (st.mods[2] && !st.mods[1]) + '">Module 4</button>' +
+        '<button class="chip" data-t="mix" aria-pressed="' + (st.mods[1] && st.mods[2]) + '">Mixed</button>' +
+        '<button class="chip" data-t="missed" aria-pressed="' + st.missedOnly + '">Missed only (' + Object.keys(S.wrong).length + ")</button>" +
+        '<button class="chip" data-t="flagged" aria-pressed="' + st.flaggedOnly + '">&#9873; Flagged (' + flagCount + ")</button>" +
+        '<span class="toolbar-sep"></span>' +
+        '<button class="chip" data-t="unseen" aria-pressed="' + st.unseenFirst + '">Unseen first</button>' +
+        '<button class="chip" data-t="shq" aria-pressed="' + st.shuffleQ + '">Shuffle questions</button>' +
+        '<button class="chip" data-t="sho" aria-pressed="' + st.shuffleO + '">Shuffle answers</button>' +
+      "</div>";
+
+    if (!st.queue.length) {
+      view.innerHTML = toolbar +
+        '<div class="card"><h2>Nothing queued</h2><div class="subtitle" style="margin-top:6px">' +
+        (st.flaggedOnly ? "You have not flagged any questions yet. Use the flag on a question to save it for later."
+          : st.missedOnly ? "Your missed pile is empty for these modules — which is a good problem to have."
+          : "No questions in this module.") +
+        "</div></div>";
+      wireToolbar(); return;
+    }
+
+    if (st.idx >= st.queue.length) { renderResults(toolbar); return; }
+
+    var q = st.queue[st.idx];
+    var a = ansFor(q);
+    var order = optionOrder(q);
+    var pct = Math.round((seenInQueue() / st.queue.length) * 100);
+
+    var correctIdx = q.opts.findIndex(function (o) { return o[1]; });
+    var ok = a.submitted && a.sel === correctIdx;
+    var showWhy = a.submitted && (!ok || a.showWhy);
+    var flagged = !!S.flags[q.id];
+
+    // Canvas-style stem: break before the labelled sub-paragraphs the way Canvas does
+    var stemParas = esc(q.stem).split(/(?=Important information:|Note:|Figure Legend\.|The Data suggests:|Which of the following result do you expect)/);
+
+    var html = toolbar +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="cv' + (a.submitted ? (ok ? " correct" : " incorrect") : "") + '">';
+
+    if (a.submitted) {
+      html += '<div class="cv-tab">' + (ok ? "Correct answer" : "Incorrect answer") + "</div>";
+    }
+
+    html += '<div class="cv-card">' +
+              '<div class="cv-head">' +
+                '<span class="cv-qnum">Question ' + q.n + "</span>" +
+                '<span class="cv-right">' +
+                  '<button class="cv-flag' + (flagged ? " on" : "") + '" id="flag" title="Flag for later review">' +
+                    '<span aria-hidden="true">&#9873;</span> ' + (flagged ? "Flagged" : "Flag") +
+                  "</button>" +
+                  '<span class="cv-pts">' + (a.submitted ? (ok ? "0.5 / 0.5 pts" : "0 / 0.5 pts") : "0.5 pts") + "</span>" +
+                "</span>" +
+              "</div>" +
+              '<div class="cv-body">' +
+                '<div class="cv-meta">Module ' + (q.mod + 2) + " &middot; " + esc(q.topic) + " &middot; " + seenInQueue() + " of " + st.queue.length + " answered</div>";
+
+    stemParas.forEach(function (para) { html += '<p class="cv-stem">' + para + "</p>"; });
+
+    if (q.stemlist && q.stemlist.length) {
+      html += '<dl class="stem-list">' + q.stemlist.map(function (row) {
+        return '<dt>' + esc(row[0]) + '.</dt><dd>' + esc(row[1]) + '</dd>';
+      }).join("") + '</dl>';
+    }
+
+    if (q.fig) {
+      html += '<figure><img src="' + esc(q.fig) + '" alt="' + esc(q.figcap || "Figure for this question") + '">' +
+              (q.figcap ? '<figcaption>' + esc(q.figcap) + "</figcaption>" : "");
+      if (q.figlegend && q.figlegend.length) {
+        html += '<dl class="fig-legend">' + q.figlegend.map(function (row) {
+          return '<dt>' + esc(row[0]) + '</dt><dd>' + esc(row[1]) + '</dd>';
+        }).join("") + '</dl>';
+      }
+      html += "</figure>";
+    }
+
+    html += '<div class="cv-opts">';
+    order.forEach(function (oi) {
+      var o = q.opts[oi];
+      var chosen = a.sel === oi;
+      var isRight = !!o[1];
+      var cls = "cv-opt";
+      if (a.submitted) {
+        if (isRight) cls += " cv-right-ans";
+        else if (chosen) cls += " cv-your-ans";
+        else cls += " cv-dim";
+      } else if (chosen) cls += " cv-picked";
+
+      var mark = "";
+      if (a.submitted && isRight) mark = '<span class="cv-check" aria-hidden="true">&#10003;</span>';
+      else if (a.submitted && chosen) mark = '<span class="cv-cross" aria-hidden="true">&#10007;</span>';
+
+      var label = "";
+      if (a.submitted && isRight && chosen) label = '<span class="cv-label good">You answered &middot; Correct answer</span>';
+      else if (a.submitted && isRight) label = '<span class="cv-label good">Correct answer</span>';
+      else if (a.submitted && chosen) label = '<span class="cv-label bad">You answered</span>';
+
+      html += '<button class="' + cls + '" data-o="' + oi + '"' + (a.submitted ? " disabled" : "") + ">" +
+                mark +
+                '<span class="cv-radio' + (chosen ? " filled" : "") + '"></span>' +
+                '<span class="cv-otext">' + label + esc(o[0]) + "</span>" +
+              "</button>";
+      if (showWhy) {
+        html += '<div class="cv-why' + (isRight ? " good" : "") + '"><b>' + (isRight ? "Why this is right: " : "Why this is wrong: ") + "</b>" + esc(o[2]) + "</div>";
+      }
+    });
+    html += "</div>";
+
+    if (a.submitted && q.note) html += '<div class="note">' + esc(q.note) + "</div>";
+
+    html += '<div class="actions">';
+    html += '<button class="ghost" id="prev"' + (st.idx === 0 ? " disabled" : "") + ">&larr; Previous</button>";
+    if (!a.submitted) {
+      html += '<button class="primary" id="submit"' + (a.sel === null ? " disabled" : "") + ">Submit answer</button>" +
+              '<span class="hint">' + (a.sel === null ? "Pick an answer first." : "Explanations appear after you submit.") + "</span>";
+    } else {
+      html += '<button class="primary" id="next2">' + (st.idx + 1 >= st.queue.length ? "See results" : "Next question") + "</button>";
+      if (ok && !a.showWhy) html += '<button class="ghost" id="whyanyway">Show the reasoning anyway</button>';
+    }
+    html += "</div></div></div></div>";
+
+    view.innerHTML = html;
+    wireToolbar();
+
+    Array.prototype.forEach.call(view.querySelectorAll(".cv-opt"), function (b) {
+      b.addEventListener("click", function () {
+        if (a.submitted) return;
+        a.sel = parseInt(b.getAttribute("data-o"), 10);
+        save();
+        renderTest();
+      });
+    });
+
+    document.getElementById("flag").addEventListener("click", function () {
+      if (S.flags[q.id]) delete S.flags[q.id]; else S.flags[q.id] = 1;
+      save(); renderTest();
+    });
+
+    var sb = document.getElementById("submit");
+    if (sb) sb.addEventListener("click", function () {
+      var wasRight = a.sel === correctIdx;
+      var pileBefore = Object.keys(S.wrong).length;
+      a.submitted = true; a.showWhy = false;
+      S.seen[q.id] = 1;
+      if (wasRight) { S.right[q.id] = 1; delete S.wrong[q.id]; } else { S.wrong[q.id] = 1; delete S.right[q.id]; }
+      if (!a.counted) {
+        a.counted = true;
+        st.runTotal++; if (wasRight) st.runRight++;
+        var t = st.byTopic[q.topic] || (st.byTopic[q.topic] = { r: 0, n: 0 });
+        t.n++; if (wasRight) t.r++;
+      }
+      if (tracking()) S.pos[activeMod()] = q.id;
+      save(); renderStats(); renderTest();
+
+      st.streak = wasRight ? st.streak + 1 : 0;
+      if (wasRight && pileBefore > 0 && Object.keys(S.wrong).length === 0) {
+        cheer("Missed pile cleared", "Nothing left to redo.", true);
+      } else if (st.streak > 0 && st.streak % 5 === 0) {
+        cheer(st.streak + " in a row", "", false);
+      }
+    });
+
+    function goTo(i) {
+      st.idx = i;
+      if (st.queue[i] && tracking()) { S.pos[activeMod()] = st.queue[i].id; save(); }
+      renderTest();
+    }
+    ["next", "next2"].forEach(function (id) {
+      var b = document.getElementById(id);
+      if (b) b.addEventListener("click", function () { goTo(st.idx + 1); });
+    });
+    var pb = document.getElementById("prev");
+    if (pb) pb.addEventListener("click", function () { if (st.idx > 0) goTo(st.idx - 1); });
+    var wa = document.getElementById("whyanyway");
+    if (wa) wa.addEventListener("click", function () { a.showWhy = true; renderTest(); });
+  }
+
+  function renderResults(toolbar) {
+    var pct = st.runTotal ? Math.round((st.runRight / st.runTotal) * 100) : 0;
+    if (!st.celebrated && st.runTotal > 0) {
+      st.celebrated = true;
+      setTimeout(function () {
+        cheer(pct >= 90 ? "You're ready" : pct >= 75 ? "Nicely done" : "Set complete",
+              st.runRight + " of " + st.runTotal + " correct", true);
+      }, 180);
+    }
+    var topics = Object.keys(st.byTopic).sort(function (a, b) {
+      var A = st.byTopic[a], B = st.byTopic[b];
+      return (A.r / A.n) - (B.r / B.n);
+    });
+    var rows = topics.map(function (name) {
+      var t = st.byTopic[name];
+      var p = Math.round((t.r / t.n) * 100);
+      var cls = p >= 80 ? "good" : p >= 60 ? "topic" : "bad";
+      return '<div class="topic-row"><span class="topic-name">' + esc(name) + "</span>" +
+             '<span class="topic-score"><span class="badge ' + cls + '">' + t.r + " / " + t.n + "</span></span></div>";
+    }).join("");
+
+    view.innerHTML = toolbar +
+      '<div class="card">' +
+        "<h2>" + st.runRight + " of " + st.runTotal + " — " + pct + "%</h2>" +
+        '<div class="subtitle">Weakest topics first. Anything under 80% is where the next hour should go.</div>' +
+        "<h3>By topic</h3>" + rows +
+        '<div class="actions">' +
+          '<button class="primary" id="again">Run it again</button>' +
+          '<button class="ghost" id="missed">Drill my missed questions</button>' +
+          '<button class="ghost" id="flaggedbtn">&#9873; Review my flagged</button>' +
+        "</div>" +
+      "</div>";
+    wireToolbar();
+    document.getElementById("again").addEventListener("click", function () { restartQueue(); renderTest(); });
+    document.getElementById("missed").addEventListener("click", function () {
+      st.missedOnly = true; st.flaggedOnly = false; buildQueue(); renderTest();
+    });
+    document.getElementById("flaggedbtn").addEventListener("click", function () {
+      st.flaggedOnly = true; st.missedOnly = false; buildQueue(); renderTest();
+    });
+  }
+
+  function wireToolbar(after) {
+    Array.prototype.forEach.call(view.querySelectorAll(".chip[data-t]"), function (c) {
+      c.addEventListener("click", function () {
+        var t = c.getAttribute("data-t");
+        if (t === "mod1") { st.mods[1] = true; st.mods[2] = false; }
+        else if (t === "mod2") { st.mods[1] = false; st.mods[2] = true; }
+        else if (t === "mix") { st.mods[1] = true; st.mods[2] = true; }
+        if (t === "mod1" || t === "mod2" || t === "mix") { S.scope = activeMod(); save(); }
+        else if (t === "missed") st.missedOnly = !st.missedOnly;
+        else if (t === "flagged") st.flaggedOnly = !st.flaggedOnly;
+        else if (t === "unseen") st.unseenFirst = !st.unseenFirst;
+        else if (t === "shq") st.shuffleQ = !st.shuffleQ;
+        else if (t === "sho") { st.shuffleO = !st.shuffleO; ALL.forEach(function (q) { q._order = null; }); }
+        buildQueue();
+        if (after) after(); else renderTest();
+      });
+    });
+  }
+
+  // ---------- Additional Practice Tools ----------
+  function autopsyCards() {
+    var out = [];
+    ALL.forEach(function (q) {
+      if (!st.mods[q.mod]) return;
+      q.opts.forEach(function (o) {
+        if (!o[1]) out.push({ kind: "autopsy", mod: q.mod, topic: q.topic, stem: q.stem, claim: o[0], fix: o[2] });
+      });
+    });
+    return out;
+  }
+  function fixCards() {
+    return (window.DECK_FIX || []).filter(function (d) { return st.mods[d.mod]; })
+      .map(function (d) { return { kind: "fix", mod: d.mod, claim: d.claim, fix: d.fix }; });
+  }
+  function revCards() {
+    return (window.DECK_REV || []).filter(function (d) { return st.mods[d.mod]; })
+      .map(function (d) { return { kind: "rev", mod: d.mod, claim: d.clue, fix: d.ans, near: d.near }; });
+  }
+  function twistCards() {
+    return (window.DECK_TWIST || []).filter(function (d) { return st.mods[d.mod]; })
+      .map(function (d) { return { kind: "mcq", mod: d.mod, topic: d.topic, stem: d.q, opts: d.opts }; });
+  }
+  function trapCards() {
+    return (window.DECK_TRAP || []).filter(function (d) { return st.mods[d.mod]; })
+      .map(function (d) {
+        return { kind: "mcq", mod: d.mod, topic: "Instructor trap", stem: d.s, tf: true, opts: [
+          ["True", d.t ? 1 : 0, d.t ? d.x : "It reads plausibly, which is the point. " + d.x],
+          ["False", d.t ? 0 : 1, d.t ? "It reads like a trap, but this one is genuinely true. " + d.x : d.x]
+        ] };
+      });
+  }
+
+  var DECKS = [
+    { key: "autopsy", name: "Distractor Autopsy", desc: "One wrong answer at a time, pulled from every question in both banks. Say why it fails, then check yourself.", build: autopsyCards },
+    { key: "twist",   name: "Variable Twists",    desc: "The same scenarios with one variable changed. Multiple choice, immediate feedback.", build: twistCards },
+    { key: "fix",     name: "Fix the False",      desc: "Every credited-false statement from the NOT-TRUE and EXCEPT questions. Repair it out loud, then flip.", build: fixCards },
+    { key: "rev",     name: "Reverse ID",         desc: "Given the mechanism or the result, name the molecule or technique. Recognition running backwards.", build: revCards },
+    { key: "trap",    name: "Rapid Traps",        desc: "Your instructor's own high-yield warnings, as fast true/false.", build: trapCards }
+  ];
+
+  function renderInsideHome() {
+    var toolbar =
+      '<div class="toolbar">' +
+        '<button class="chip" data-t="mod1" aria-pressed="' + (st.mods[1] && !st.mods[2]) + '">Module 3</button>' +
+        '<button class="chip" data-t="mod2" aria-pressed="' + (st.mods[2] && !st.mods[1]) + '">Module 4</button>' +
+        '<button class="chip" data-t="mix" aria-pressed="' + (st.mods[1] && st.mods[2]) + '">Mixed</button>' +
+        '<span class="toolbar-sep"></span>' +
+        '<span class="hint">Every deck shuffles each time you open it.</span>' +
+      "</div>";
+
+    var cards = DECKS.map(function (d) {
+      var n = d.build().length;
+      return '<button class="deck" data-d="' + d.key + '">' +
+               '<div class="dname">' + esc(d.name) + "</div>" +
+               '<div class="ddesc">' + esc(d.desc) + "</div>" +
+               '<div class="dcount">' + n + " cards</div>" +
+             "</button>";
+    }).join("");
+
+    view.innerHTML = toolbar +
+      '<div class="card" style="margin-bottom:12px">' +
+        "<h2>Know it backwards and forwards</h2>" +
+        '<div class="subtitle" style="margin-top:6px">Recognizing the right answer is the easy half. These five decks make you produce the reasoning instead: why each wrong option fails, what a false statement should have said, what the technique is when you are handed only its mechanism, and what happens when one variable moves.</div>' +
+      "</div>" +
+      '<div class="deck-grid">' + cards + "</div>";
+
+    wireToolbar(renderInsideHome);
+    Array.prototype.forEach.call(view.querySelectorAll(".deck"), function (b) {
+      b.addEventListener("click", function () {
+        var k = b.getAttribute("data-d");
+        var d = DECKS.filter(function (x) { return x.key === k; })[0];
+        st.deck = d; st.dqueue = shuffled(d.build()); st.didx = 0; st.revealed = false; st.dsel = null;
+        st.tally = { got: 0, miss: 0 };
+        renderDrill();
+      });
+    });
+  }
+
+  function renderDrill() {
+    var d = st.deck;
+    if (st.didx >= st.dqueue.length) {
+      view.innerHTML =
+        '<div class="card"><h2>' + esc(d.name) + " — deck complete</h2>" +
+        '<div class="subtitle" style="margin-top:6px">' + st.dqueue.length + ' cards. Reshuffle and go again, or switch decks.</div>' +
+        '<div class="actions"><button class="primary" id="redo">Shuffle and repeat</button>' +
+        '<button class="ghost" id="back">All decks</button></div></div>';
+      document.getElementById("redo").addEventListener("click", function () {
+        st.dqueue = shuffled(d.build()); st.didx = 0; st.revealed = false; st.dsel = null;
+        st.tally = { got: 0, miss: 0 }; renderDrill();
+      });
+      document.getElementById("back").addEventListener("click", renderInsideHome);
+      return;
+    }
+
+    var c = st.dqueue[st.didx];
+    var pct = Math.round((st.didx / st.dqueue.length) * 100);
+    var head =
+      '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="card">' +
+        '<div class="q-head">' +
+          '<span class="q-count">' + esc(d.name) + " &middot; " + (st.didx + 1) + " of " + st.dqueue.length + "</span>" +
+          '<span><span class="badge m' + c.mod + '">Module ' + (c.mod + 2) + "</span>" +
+          (c.topic ? ' <span class="badge topic">' + esc(c.topic) + "</span>" : "") + "</span>" +
+        "</div>";
+
+    var html;
+
+    if (c.kind === "mcq") {
+      var ci = c.opts.findIndex(function (o) { return o[1]; });
+      var ok = st.revealed && st.dsel === ci;
+      var dShowWhy = st.revealed && (!ok || st.showWhy);
+      var banner = "";
+      if (st.revealed) {
+        banner = '<div class="banner ' + (ok ? "right" : "wrong") + '">' +
+                   '<span class="bmark" aria-hidden="true">' + (ok ? "&#10003;" : "&#10007;") + "</span>" +
+                   '<span class="btext"><span class="bword">' + (ok ? "Correct" : "Incorrect") + "</span>" +
+                     '<span class="bsub">' + (ok ? "Answer " + LET[ci] : "You chose " + LET[st.dsel] + " &middot; the answer is " + LET[ci]) + "</span></span>" +
+                   '<button class="bnext" id="dnext">' + (st.didx + 1 >= st.dqueue.length ? "Finish" : "Next") + " &rarr;</button>" +
+                 "</div>";
+      }
+      html = head.replace('<div class="q-head">', banner + '<div class="q-head">') +
+             '<p class="stem">' + (c.tf ? "True or false: " : "") + esc(c.stem) + "</p><div class=\"opts\">";
+      c.opts.forEach(function (o, oi) {
+        var cls = "opt";
+        if (st.revealed) { if (o[1]) cls += " is-correct"; else if (st.dsel === oi) cls += " is-chosen-wrong"; }
+        html += '<button class="' + cls + '" data-o="' + oi + '" aria-pressed="' + String(st.dsel === oi) + '"' + (st.revealed ? " disabled" : "") + ">" +
+                  '<span class="letter">' + LET[oi] + '</span><span class="otext">' + esc(o[0]) + "</span></button>";
+        if (dShowWhy) html += '<div class="why' + (o[1] ? " correct-why" : "") + '"><b>' + (o[1] ? "Right: " : "Wrong: ") + "</b>" + esc(o[2]) + "</div>";
+      });
+      html += "</div>";
+      html += '<div class="actions">' +
+        (st.revealed
+          ? '<button class="primary" id="dnext2">' + (st.didx + 1 >= st.dqueue.length ? "Finish deck" : "Next card") + "</button>" +
+            (ok && !st.showWhy ? '<button class="ghost" id="dwhy">Show the reasoning anyway</button>' : "")
+          : '<button class="primary" id="dsub"' + (st.dsel === null ? " disabled" : "") + ">Submit answer</button>") +
+        '<button class="ghost" id="back">All decks</button></div></div>';
+    } else {
+      var label = c.kind === "autopsy" ? "This answer choice is wrong. Say why."
+                : c.kind === "fix" ? "This statement is false. Say what it should have said."
+                : "Name the technique or term.";
+      html = head + '<div class="prompt-label">' + esc(label) + "</div>";
+      if (c.kind === "autopsy") html += '<p class="stem" style="font-size:15px;color:var(--muted)">' + esc(c.stem) + "</p>";
+      html += '<div class="claim">' + esc(c.claim) + "</div>";
+      if (st.revealed) {
+        html += '<div class="reveal"><span class="rlabel">' +
+                (c.kind === "rev" ? "Answer" : c.kind === "fix" ? "What is actually true" : "Why it fails") +
+                "</span>" + esc(c.fix) +
+                (c.near ? '<span class="near">' + esc(c.near) + "</span>" : "") + "</div>" +
+                '<div class="selfcheck">' +
+                  '<span class="sclabel">How did that go?</span>' +
+                  '<button class="got" id="sc-got">I had it</button>' +
+                  '<button id="sc-miss">Show me again later</button>' +
+                  '<span class="tally">' + st.tally.got + " had &middot; " + st.tally.miss + " requeued</span>" +
+                "</div>";
+      }
+      html += '<div class="actions">' +
+        (st.revealed
+          ? '<button class="ghost" id="back">All decks</button>'
+          : '<button class="primary" id="dreveal">Reveal</button><button class="ghost" id="back">All decks</button><span class="hint">Answer it in your head first — out loud is better.</span>') +
+        "</div></div>";
+    }
+
+    view.innerHTML = html;
+
+    Array.prototype.forEach.call(view.querySelectorAll(".opt"), function (b) {
+      b.addEventListener("click", function () {
+        if (st.revealed) return;
+        st.dsel = parseInt(b.getAttribute("data-o"), 10);
+        renderDrill();
+      });
+    });
+    var ds = document.getElementById("dsub");
+    if (ds) ds.addEventListener("click", function () {
+      st.revealed = true; st.showWhy = false; renderDrill();
+    });
+    var dr = document.getElementById("dreveal");
+    if (dr) dr.addEventListener("click", function () { st.revealed = true; renderDrill(); });
+    ["dnext", "dnext2"].forEach(function (id) {
+      var b = document.getElementById(id);
+      if (b) b.addEventListener("click", advance);
+    });
+    var dw = document.getElementById("dwhy");
+    if (dw) dw.addEventListener("click", function () { st.showWhy = true; renderDrill(); });
+    var sg = document.getElementById("sc-got");
+    if (sg) sg.addEventListener("click", function () { st.tally.got++; advance(); });
+    var sm = document.getElementById("sc-miss");
+    if (sm) sm.addEventListener("click", function () { st.tally.miss++; st.dqueue.push(c); advance(); });
+
+    function advance() {
+      st.didx++; st.revealed = false; st.dsel = null; st.showWhy = false; renderDrill();
+    }
+
+    var bk = document.getElementById("back");
+    if (bk) bk.addEventListener("click", renderInsideHome);
+  }
+
+  // ---------- my review ----------
+  function reviewSet() {
+    var f = st.reviewFilter;
+    return ALL.filter(function (q) {
+      var a = S.ans[q.id];
+      if (f === "flagged") return !!S.flags[q.id];
+      if (f === "wrong")   return !!S.wrong[q.id];
+      if (f === "right")   return !!S.right[q.id];
+      return !!(a && a.submitted) || !!S.seen[q.id];   // "answered"
+    });
+  }
+
+  function renderReview() {
+    var counts = {
+      answered: ALL.filter(function (q) { return S.seen[q.id]; }).length,
+      wrong: Object.keys(S.wrong).length,
+      right: Object.keys(S.right).length,
+      flagged: Object.keys(S.flags).length
+    };
+    var chips = [
+      ["wrong", "Missed (" + counts.wrong + ")"],
+      ["flagged", "⚑ Flagged (" + counts.flagged + ")"],
+      ["answered", "All answered (" + counts.answered + ")"],
+      ["right", "Correct (" + counts.right + ")"]
+    ];
+    var html = '<div class="toolbar">' + chips.map(function (c) {
+      return '<button class="chip" data-r="' + c[0] + '" aria-pressed="' + (st.reviewFilter === c[0]) + '">' + c[1] + "</button>";
+    }).join("") + "</div>";
+
+    var list = reviewSet();
+    if (!list.length) {
+      html += '<div class="card"><h2>Nothing here yet</h2><div class="subtitle" style="margin-top:6px">' +
+        (st.reviewFilter === "flagged" ? "Flag a question on the Practice Test tab and it will show up here."
+         : st.reviewFilter === "wrong" ? "No missed questions in this view — nice."
+         : st.reviewFilter === "right" ? "No correct answers recorded yet."
+         : "Answer a few questions on the Practice Test tab first.") +
+        '</div><div class="actions"><button class="primary" id="rv-go">Go to the practice test</button></div></div>';
+      view.innerHTML = html;
+      wireReview();
+      return;
+    }
+
+    html += '<div class="rv-count">' + list.length + (list.length === 1 ? " question" : " questions") + " &middot; scroll to review</div>";
+
+    list.forEach(function (q) {
+      var a = S.ans[q.id] || { sel: null, submitted: false };
+      var correctIdx = q.opts.findIndex(function (o) { return o[1]; });
+      var answered = a.submitted && a.sel !== null;
+      var ok = answered && a.sel === correctIdx;
+      var flagged = !!S.flags[q.id];
+
+      html += '<div class="cv' + (answered ? (ok ? " correct" : " incorrect") : "") + '">';
+      if (answered) html += '<div class="cv-tab">' + (ok ? "Correct answer" : "Incorrect answer") + "</div>";
+      html += '<div class="cv-card">' +
+                '<div class="cv-head">' +
+                  '<span class="cv-qnum">Module ' + (q.mod + 2) + " &middot; Question " + q.n + "</span>" +
+                  '<span class="cv-right">' +
+                    '<button class="cv-flag' + (flagged ? " on" : "") + '" data-flag="' + esc(q.id) + '">' +
+                      '<span aria-hidden="true">&#9873;</span> ' + (flagged ? "Flagged" : "Flag") +
+                    "</button>" +
+                    '<span class="cv-pts">' + (answered ? (ok ? "0.5 / 0.5 pts" : "0 / 0.5 pts") : "not answered") + "</span>" +
+                  "</span>" +
+                "</div>" +
+                '<div class="cv-body">' +
+                  '<div class="cv-meta">' + esc(q.topic) + "</div>" +
+                  '<p class="cv-stem">' + esc(q.stem) + "</p>";
+
+      if (q.stemlist && q.stemlist.length) {
+        html += '<dl class="stem-list">' + q.stemlist.map(function (row) {
+          return "<dt>" + esc(row[0]) + ".</dt><dd>" + esc(row[1]) + "</dd>";
+        }).join("") + "</dl>";
+      }
+      if (q.fig) {
+        html += '<figure><img src="' + esc(q.fig) + '" alt="' + esc(q.figcap || "Figure for this question") + '">' +
+                (q.figcap ? "<figcaption>" + esc(q.figcap) + "</figcaption>" : "");
+        if (q.figlegend && q.figlegend.length) {
+          html += '<dl class="fig-legend">' + q.figlegend.map(function (row) {
+            return "<dt>" + esc(row[0]) + "</dt><dd>" + esc(row[1]) + "</dd>";
+          }).join("") + "</dl>";
+        }
+        html += "</figure>";
+      }
+
+      html += '<div class="cv-opts">';
+      q.opts.forEach(function (o, oi) {
+        var chosen = answered && a.sel === oi;
+        var isRight = !!o[1];
+        var cls = "cv-opt";
+        if (isRight) cls += " cv-right-ans";
+        else if (chosen) cls += " cv-your-ans";
+        else cls += " cv-dim";
+
+        var mark = isRight ? '<span class="cv-check" aria-hidden="true">&#10003;</span>'
+                 : chosen  ? '<span class="cv-cross" aria-hidden="true">&#10007;</span>' : "";
+        var label = isRight && chosen ? '<span class="cv-label good">You answered &middot; Correct answer</span>'
+                  : isRight ? '<span class="cv-label good">Correct answer</span>'
+                  : chosen  ? '<span class="cv-label bad">You answered</span>' : "";
+
+        html += '<div class="' + cls + ' cv-static">' + mark +
+                  '<span class="cv-radio' + (chosen ? " filled" : "") + '"></span>' +
+                  '<span class="cv-otext">' + label + esc(o[0]) + "</span>" +
+                "</div>" +
+                '<div class="cv-why' + (isRight ? " good" : "") + '"><b>' +
+                  (isRight ? "Why this is right: " : "Why this is wrong: ") + "</b>" + esc(o[2]) + "</div>";
+      });
+      html += "</div>";
+      if (q.note) html += '<div class="note">' + esc(q.note) + "</div>";
+      html += '<div class="actions"><button class="ghost" data-goto="' + esc(q.id) + '">Practice this question</button></div>';
+      html += "</div></div></div>";
+    });
+
+    view.innerHTML = html;
+    wireReview();
+  }
+
+  function wireReview() {
+    Array.prototype.forEach.call(view.querySelectorAll(".chip[data-r]"), function (c) {
+      c.addEventListener("click", function () {
+        st.reviewFilter = c.getAttribute("data-r");
+        renderReview();
+      });
+    });
+    Array.prototype.forEach.call(view.querySelectorAll("[data-flag]"), function (b) {
+      b.addEventListener("click", function () {
+        var id = b.getAttribute("data-flag");
+        if (S.flags[id]) delete S.flags[id]; else S.flags[id] = 1;
+        save(); renderStats(); renderReview();
+      });
+    });
+    Array.prototype.forEach.call(view.querySelectorAll("[data-goto]"), function (b) {
+      b.addEventListener("click", function () {
+        var id = b.getAttribute("data-goto"), q = ALL.filter(function (x) { return x.id === id; })[0];
+        if (!q) return;
+        st.mods[1] = q.mod === 1; st.mods[2] = q.mod === 2;
+        st.missedOnly = false; st.flaggedOnly = false;
+        buildQueue();
+        for (var i = 0; i < st.queue.length; i++) {
+          if (st.queue[i].id === id) { st.idx = i; S.pos[activeMod()] = id; save(); break; }
+        }
+        setMode("test");
+      });
+    });
+    var g = document.getElementById("rv-go");
+    if (g) g.addEventListener("click", function () { setMode("test"); });
+  }
+
+  // ---------- tabs ----------
+  function setMode(m) {
+    st.mode = m;
+    document.getElementById("tab-test").setAttribute("aria-selected", String(m === "test"));
+    document.getElementById("tab-inside").setAttribute("aria-selected", String(m === "inside"));
+    document.getElementById("tab-review").setAttribute("aria-selected", String(m === "review"));
+    if (m === "test") { if (!st.queue.length) buildQueue(); renderTest(); }
+    else if (m === "review") renderReview();
+    else renderInsideHome();
+  }
+  document.getElementById("tab-test").addEventListener("click", function () { setMode("test"); });
+  document.getElementById("tab-inside").addEventListener("click", function () { setMode("inside"); });
+  document.getElementById("tab-review").addEventListener("click", function () { setMode("review"); });
+
+  // ---------- reset ----------
+  var rb = document.getElementById("reset"), armed = false, armTimer = null;
+  rb.addEventListener("click", function () {
+    if (!armed) {
+      armed = true;
+      rb.classList.add("armed");
+      rb.textContent = "Click again to erase";
+      armTimer = setTimeout(function () {
+        armed = false; rb.classList.remove("armed"); rb.textContent = "Reset progress";
+      }, 5000);
+      return;
+    }
+    clearTimeout(armTimer);
+    armed = false; rb.classList.remove("armed"); rb.textContent = "Progress cleared";
+    setTimeout(function () { rb.textContent = "Reset progress"; }, 2000);
+
+    S = { seen: {}, wrong: {}, right: {}, drill: {}, flags: {}, ans: {}, pos: {}, scope: 1 };
+    st.mods[1] = true; st.mods[2] = false;
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    st.flaggedOnly = false;
+    st.ans = {};
+    ALL.forEach(function (q) { q._order = null; });
+    st.missedOnly = false;
+    st.showWhy = false;
+    renderStats();
+    if (st.mode === "test") { buildQueue(); renderTest(); } else { renderInsideHome(); }
+  });
+
+  renderStats();
+  buildQueue();
+  renderTest();
+})();
+</script>
+
+</body>
+</html>
